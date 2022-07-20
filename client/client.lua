@@ -69,12 +69,13 @@ end)
 
 RegisterNetEvent('vorpclothingstore:LoadYourOutfits')
 AddEventHandler('vorpclothingstore:LoadYourOutfits', function(result)
-	LoadYourOutfits()
+	print(json.encode(result))
+	LoadYourOutfits(result)
 end)
 
 RegisterNetEvent('vorpclothingstore:startBuyCloths')
-AddEventHandler('vorpclothingstore:startBuyCloths', function(result)
-	startBuyCloths()
+AddEventHandler('vorpclothingstore:startBuyCloths', function(state)
+	startBuyCloths(state)
 end)
 
 AddEventHandler('onResourceStop', function(resourceName)
