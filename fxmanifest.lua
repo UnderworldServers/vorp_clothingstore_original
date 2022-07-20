@@ -23,8 +23,8 @@ shared_scripts {
     'languages/*.lua',
 }
 
-files = {
-    'shared/*.png',
+files {
+    'images/*'
 }
 
 dependencies { 
