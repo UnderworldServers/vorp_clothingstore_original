@@ -186,8 +186,8 @@ function MoveToCoords(loc)
 end
 
 function SetOutfit(index)
-	TriggerServerEvent("vorpclothingstore:setOutfit", MyOutfits.ElementAt(index).Value.Item2);
-	for k,v in pairs(ClothesDB) do
+	TriggerServerEvent("vorpclothingstore:setOutfit", json.encode(MyOutfits[index].comps));
+	for k,v in pairs(MyOutfits[index].comps) do
 		clothesPlayer[k] = v
 	end
 	startBuyCloths(false)
@@ -205,9 +205,9 @@ function DeleteOutfit(index)
 	MyOutfits[index] = nil
 end
 
-function LoadYourOutfits()
-	MyOutfits = nil
-	for k,v in pairs(outfits_db) do
+function LoadYourOutfits(outfits)
+	MyOutfits = {}
+	for k,v in pairs(outfits) do
 		MyOutfits[k] = {title = v.title, comps = v.comps}
 	end
 end
@@ -239,7 +239,7 @@ end
 function FinishBuy(buy, cost)
 	local saveOutfit, outfitName = false, ""
 	if buy then
-		TriggerEvent("vorpinputs:getInput", Locales["ButtonNewOutfit"], Locales["PlaceHolderNewOutfit"], function(result)
+		TriggerEvent("vorpinputs:getInput", _("ButtonNewOutfit"), _("PlaceHolderNewOutfit"), function(result)
 			if result ~= "" or result then
 				outfitName = result
 				saveOutfit = true
@@ -253,7 +253,7 @@ end
 function startBuyCloths(state)
 	if state then
 		MenuData.CloseAll()
-		ExecuteCommand("/rc")
+		ExecuteCommand("rc")
 	else
 		TriggerServerEvent("vorpcharacter:getPlayerSkin");
 	end
@@ -278,7 +278,6 @@ function startBuyCloths(state)
 	TriggerEvent("vorp:setInstancePlayer", false);
 
 	DoScreenFadeIn(1000);
-	inShop = nil
 end
 
 function SetPlayerComponent(menuVal, catName, rawCat)
@@ -318,13 +317,13 @@ function MainClothingMenu()
 		 label = _('TitleMenuClothes'),
 		 value = 'ClothingMenu' ,
 		 desc = _('SubTitleMenuClothes'),
-		 image="nui://vorp_clothingstore/shared/clothing_purchase.png",
+		 image="nui://vorp_clothingstore/images/clothing_purchase.png",
 		},
 		{
 		 label = _('TitleMenuOutfits'),
 		 value = 'OutfitMenu' ,
 		 desc = _('SubTitleMenuOutfits'),
-		 image="nui://vorp_clothingstore/shared/kit_wardrobe.png",
+		 image="nui://vorp_clothingstore/images/kit_wardrobe.png",
 		},
 	}
 
@@ -340,7 +339,7 @@ function MainClothingMenu()
 		if(data.current.value == 'ClothingMenu') then
 			ClothingMenu()
 		elseif(data.current.value == 'OutfitMenu') then
-			print("test")
+			OutfitMenu()
 		end
 	end,
 
@@ -358,10 +357,9 @@ function ClothingMenu()
 	
 	for k,v in pairs(ClothesUtils) do
 		if string.find(string.lower(k), "_" .. playerSex) then
-			local labelForm
-			if Config.Conversions[k] then
-				labelForm = _(Config.Conversions[k])
-			end
+			local labelForm = "N/A"
+			if Config.Conversions[k] then; labelForm = _(Config.Conversions[k]); end
+			
 			elements[#elements + 1] = {
 			 label = labelForm,					-- Ex. "RINGS_RH"
 			 type = "dynamic",
@@ -370,11 +368,12 @@ function ClothingMenu()
 			 max = #v,
 			 rawName = k,						-- Ex. "RINGS_RH_MALE"
 			 catItem = Config.Conversions[k]	-- Ex. "RightRings"
-		}
+			}
+			
 		end
 	end
 	
-	elements[#elements + 1] = { label = _('Finish'), value = "purchase", image="nui://vorp_clothingstore/shared/clothing_purchase.png" }
+	elements[#elements + 1] = { label = _('Finish'), value = "purchase", image= "nui://vorp_clothingstore/images/clothing_purchase.png" }
 
 	MenuData.Open('default', GetCurrentResourceName(), "ClothingMenu",
 	{
@@ -386,7 +385,10 @@ function ClothingMenu()
 
 	function(data, menu)
 		for k,v in pairs(data.elements) do
-			if data.current.value > 0 and (selectedComponents[data.current.rawName] ~= data.current.value) then
+			if data.current.value == "purchase" then
+				FinishBuy(true, 5)
+				menu.close()
+			elseif data.current.value > 0 and (selectedComponents[data.current.rawName] ~= data.current.value) then
 				SetPlayerComponent(data.current.value, data.current.catItem, data.current.rawName)
 				selectedComponents[data.current.rawName] = data.current.value
 				totalCost = totalCost + Config.Cost[data.current.catItem]
@@ -394,6 +396,47 @@ function ClothingMenu()
 				SetPlayerComponent(0, data.current.catItem, data.current.rawName)
 				selectedComponents[data.current.rawName] = nil
 				totalCost = totalCost - Config.Cost[data.current.catItem]
+			end
+		end
+	end,
+
+	function(data, menu)
+		MainClothingMenu()
+	end)
+end
+
+function OutfitMenu()
+	MenuData.CloseAll()
+	local elements = {}
+	local selectedOutfit
+	
+	for k,v in pairs(MyOutfits) do
+		local outfitName
+		if k == "" then; outfitName = "Outfit"; else; outfitName = v.title; end
+		elements[#elements + 1] = {
+			 label = outfitName,
+			 value = k,
+		}
+	end
+	
+	elements[#elements + 1] = { label = _('SelectOutfit'), value = "select", image= "nui://vorp_clothingstore/images/kit_wardrobe.png" }
+
+	MenuData.Open('default', GetCurrentResourceName(), "OutfitMenu",
+	{
+		title   = _('TitleMenuOutfits'),
+		subtext = _('SubTitleMenuOutfits'),
+		align   = 'top-left',
+		elements = elements,
+	},
+
+	function(data, menu)
+		for k,v in pairs(data.elements) do
+			if data.current.value == "select" then
+				menu.close()
+				SetOutfit(selectedOutfit)
+			elseif data.current.value ~= "select" and data.current.value then
+				selectedOutfit = data.current.value
+				print(selectedOutfit)
 			end
 		end
 	end,
