@@ -20,6 +20,8 @@ Locales["En"] = {
 
     PlaceHolderNewOutfit = "If you want to save the outfit, name it and save it",
     ButtonNewOutfit = "Save Outfit",
+	
+	SelectOutfit = "Confirm Outfit Selection",
 
 
     MaskValue = "Mask #",
