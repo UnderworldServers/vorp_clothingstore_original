@@ -19,8 +19,12 @@ server_scripts {
 
 shared_scripts {
     'config.lua',
-    'shared/locale.lua',
+    'shared/*.lua',
     'languages/*.lua',
+}
+
+files = {
+    'shared/*.png',
 }
 
 dependencies { 
