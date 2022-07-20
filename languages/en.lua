@@ -1,7 +1,7 @@
 --------------------------------------------------------------------------------------
 ---------------------------------- ENGLISH -------------------------------------------
 
-Locales["en"] = {
+Locales["En"] = {
     PressToOpen = "Press [~e~Space~q~] to access the store", -- Menu title
     PressGuide = "Rotate <-[A] [D]-> | Cameras [W] or [S]",
     TitleMenuOutfitsUseBtn = "Wear Outfit",
