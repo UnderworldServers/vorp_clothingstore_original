@@ -31,7 +31,6 @@ AddEventHandler('vorpclothingstore:buyPlayerCloths', function(totalCost, jsonClo
 	local Character = VORPcore.getUser(_source).getUsedCharacter
 	local sid = nil; for _, v in pairs(GetPlayerIdentifiers(_source)) do; if string.find(v, 'steam') then; sid = v; break; end; end
 	local userMoney = Character.money
-	print("buyPlayerCloths")
 	if totalCost <= userMoney then
 		TriggerEvent("vorpcharacter:setPlayerCompChange", _source, jsonCloths);
 		local charIdentifier = Character.charIdentifier
@@ -42,17 +41,23 @@ AddEventHandler('vorpclothingstore:buyPlayerCloths', function(totalCost, jsonClo
 		else
 			print("Error: SteamID not found for " .. _source)
 		end
-		TriggerClientEvent("vorpclothingstore:startBuyCloths", _source, true)
+		Character.removeCurrency(0, totalCost)
 		TriggerClientEvent("vorp:Tip", _source, _("SuccessfulBuy") .. " $" .. totalCost, 4000)
+		Wait(1000) -- Gives a little extra time to read the message
+		TriggerClientEvent("vorpclothingstore:startBuyCloths", _source, true)
 	else
-		TriggerClientEvent("vorpclothingstore:startBuyCloths", _source, false)
 		TriggerClientEvent("vorp:Tip", _source, _("NoMoney"), 4000)
+		Wait(1000) -- Gives a little extra time to read the message
+		TriggerClientEvent("vorpclothingstore:startBuyCloths", _source, false)
 	end
 end)
 
 RegisterNetEvent('vorpclothingstore:setOutfit')
 AddEventHandler('vorpclothingstore:setOutfit', function(result)
-	TriggerEvent("vorpcharacter:setPlayerCompChange", _source, result);
+	local _source = source
+	if result then
+		TriggerEvent("vorpcharacter:setPlayerCompChange", _source, result);
+	end
 end)
 
 RegisterNetEvent('vorpclothingstore:deleteOutfit')
