@@ -1,5 +1,9 @@
 local CamWardrove, CamUp, CamMid, CamBot, playerSex
-local outfits_db, MyOutfits, ClothesDB, SkinsDB = {}, {}, {}
+local outfits_db, MyOutfits, ClothesDB, SkinsDB, originalOutfit, VORPcore = {}, {}, {}, {}, {}, {}
+
+TriggerEvent("getCore", function(core)	-- Only using for bucket routing ATM
+    VORPcore = core
+end); local instanceNumber = 4957975
 
 local clothesPlayer = {
     Hat = 0 ,
@@ -84,11 +88,30 @@ function PedManager(action)
 	end
 end
 
+function EmergencyCleanup()		-- Only called if the player dies inside the shops or is inside on resource restart
+	if inShop then
+		local PedExitx = Config.Stores[inShop].ExitWardrobe[1]
+		local PedExity = Config.Stores[inShop].ExitWardrobe[2]
+		local PedExitz = Config.Stores[inShop].ExitWardrobe[3]
+		local PedExitheading = Config.Stores[inShop].ExitWardrobe[4]
+		MenuData.CloseAll()
+		SetCamActive(CamWardrove, false);
+		RenderScriptCams(false, true, 1000, true, true, 0);
+		Citizen.Wait(250);
+		DestroyCam(CamWardrove, true);
+		FreezeEntityPosition(PlayerPedId(), false);
+		SetEntityCoords(PlayerPedId(), PedExitx, PedExity, PedExitz, false, false, false, false);
+		SetEntityHeading(PlayerPedId(), PedExitheading);
+		VORPcore.instancePlayers(0)
+		inShop, totalCost = false, 0
+	end
+end
+
 function DrawText(text, x, y, fScale, fSize, rC, gC, bC, aC, tCentered, shadow)
 	local str = CreateVarString(10, "LITERAL_STRING", text)
 	SetTextScale(fScale, fSize)
 	SetTextColor(rC, gC, bC, aC)
-	SetTextCentre( true)
+	SetTextCentre(tCentered)
 	if shadow then; SetTextDropshadow(1, 0, 0, 255); end
 	Citizen.InvokeNative(0xADA9255D, 1)
 	DisplayText(str, x, y)
@@ -137,7 +160,7 @@ function MoveToCoords(loc)
 	local CameraBootsRoty = Config.Stores[inShop].Cameras[4][5]
 	local CameraBootsRotz = Config.Stores[inShop].Cameras[4][6]
 
-	TriggerEvent("vorp:setInstancePlayer", true);
+	VORPcore.instancePlayers(tonumber(GetPlayerServerId(PlayerId()))+ instanceNumber)
 
 	ClearPedTasksImmediately(StorePeds[inShop], 1, 1);
 	FreezeEntityPosition(StorePeds[inShop], false);
@@ -186,10 +209,10 @@ function MoveToCoords(loc)
 end
 
 function SetOutfit(index)
-	TriggerServerEvent("vorpclothingstore:setOutfit", json.encode(MyOutfits[index].comps));
-	for k,v in pairs(MyOutfits[index].comps) do
-		clothesPlayer[k] = v
-	end
+	TriggerServerEvent("vorpclothingstore:setOutfit", MyOutfits[index].comps);
+	-- for k,v in pairs(MyOutfits[index].comps) do
+		-- clothesPlayer[k] = v
+	-- end
 	startBuyCloths(false)
 end
 
@@ -197,18 +220,19 @@ function LoadYourCloths(cloths, skins)
 	ClothesDB, SkinsDB = json.decode(cloths), json.decode(skins)
 	for k,v in pairs(ClothesDB) do
 		clothesPlayer[k] = v
+		originalOutfit[k] = v
 	end
 end
 
-function DeleteOutfit(index)
-	TriggerServerEvent("vorpclothingstore:deleteOutfit", index);
+function DeleteOutfit(index, dbId)
+	TriggerServerEvent("vorpclothingstore:deleteOutfit", dbId);
 	MyOutfits[index] = nil
 end
 
 function LoadYourOutfits(outfits)
 	MyOutfits = {}
 	for k,v in pairs(outfits) do
-		MyOutfits[k] = {title = v.title, comps = v.comps}
+		MyOutfits[k] = {title = v.title, comps = v.comps, dbId = v.id}
 	end
 end
 
@@ -246,12 +270,14 @@ function FinishBuy(buy, cost)
 			end
 			
 			TriggerServerEvent("vorpclothingstore:buyPlayerCloths", cost, json.encode(clothesPlayer), saveOutfit, outfitName);
+			return
 		end)
+		TriggerServerEvent("vorpclothingstore:buyPlayerCloths", cost, json.encode(clothesPlayer), saveOutfit, outfitName);
 	end
 end
 
 function startBuyCloths(state)
-	if state then
+	if not state then
 		MenuData.CloseAll()
 		ExecuteCommand("rc")
 	else
@@ -275,15 +301,80 @@ function startBuyCloths(state)
 	SetEntityHeading(PlayerPedId(), PedExitheading);
 
 
-	TriggerEvent("vorp:setInstancePlayer", false);
+	VORPcore.instancePlayers(0) 
 
 	DoScreenFadeIn(1000);
+	inShop = false
+	totalCost = 0
+end
+
+function PreviewOutfit(index)
+	local playerPed, clothData = PlayerPedId()
+	loadingData = true
+	
+	if not index then	-- When we return from a menu without confirming, set clothes back to original states
+		clothData = clothesPlayer
+	else
+		clothData = json.decode(MyOutfits[index].comps)
+	end
+	
+	for k,v in pairs(clothData) do
+		local catHash = CategoryDBName[k]
+		if playerSex == "male" then
+			if v <= 0 then
+				if catHash == 0xE06D30CE then
+					Citizen.InvokeNative(0xD710A5007C2AC539, playerPed, 0x662AC34, 0)
+				end
+				Citizen.InvokeNative(0xD710A5007C2AC539, playerPed, catHash, 0);
+				Citizen.InvokeNative(0xCC8CA3E88256E58F, playerPed, 0, 1, 1, 1, 0);
+			else
+				if catHash == 0xE06D30CE then
+					Citizen.InvokeNative(0xD710A5007C2AC539, playerPed, 0x662AC34, 0)
+					Citizen.InvokeNative(0xCC8CA3E88256E58F, playerPed, 0, 1, 1, 1, 0);
+				end
+				Citizen.InvokeNative(0x59BD177A1A48600A, playerPed, catHash);
+				Citizen.InvokeNative(0xD3A7B003ED343FD9, playerPed, v, true, false, false);
+				Citizen.InvokeNative(0xD3A7B003ED343FD9, playerPed, v, true, true, false);
+			end
+		else
+			if v <= 0 then
+				Citizen.InvokeNative(0xD710A5007C2AC539, playerPed, catHash, 0);
+				Citizen.InvokeNative(0xCC8CA3E88256E58F, playerPed, 0, 1, 1, 1, 0);
+			else
+				Citizen.InvokeNative(0x59BD177A1A48600A, playerPed, catHash);
+				Citizen.InvokeNative(0xD3A7B003ED343FD9, playerPed, v, true, false, true);
+				Citizen.InvokeNative(0xD3A7B003ED343FD9, playerPed, v, true, true, true);
+			end
+		end
+		Citizen.Wait(5)
+	end
+	loadingData = false
 end
 
 function SetPlayerComponent(menuVal, catName, rawCat)
 	local catHash = CategoryHashes[catName]				-- Ex. "0x9925C067"
 	local playerPed = PlayerPedId()
 	local clothPlay = CategoryClothesPlayer[catName]	-- Ex. "RingRh" - Match original category names in DB
+	
+	if clothPlay == "Coat" then													-- Carried over from original code, probably necessary
+		Citizen.InvokeNative(0xD710A5007C2AC539, playerPed, 0x0662AC34, 0);
+		Citizen.InvokeNative(0xCC8CA3E88256E58F, playerPed, 0, 1, 1, 1, 0);
+		clothesPlayer["CoatClosed"] = -1
+	elseif clothPlay == "CoatClosed" then
+		if playerSex == "male" then; Citizen.InvokeNative(0xD710A5007C2AC539, playerPed, 0x662AC34, 0); end	-- Only applies to males it seems
+		Citizen.InvokeNative(0xD710A5007C2AC539, playerPed, 0xE06D30CE, 0);
+		Citizen.InvokeNative(0xCC8CA3E88256E58F, playerPed, 0, 1, 1, 1, 0);
+		clothesPlayer["Coat"] = -1	
+	elseif clothPlay == "Spurs" then
+		Citizen.InvokeNative(0xD710A5007C2AC539, playerPed, 0x514ADCEA, 0);
+		Citizen.InvokeNative(0xCC8CA3E88256E58F, playerPed, 0, 1, 1, 1, 0);
+		clothesPlayer["Spats"] = -1
+	elseif clothPlay == "Spats" then
+		Citizen.InvokeNative(0xD710A5007C2AC539, playerPed, 0x18729F39, 0);
+		Citizen.InvokeNative(0xCC8CA3E88256E58F, playerPed, 0, 1, 1, 1, 0);
+		clothesPlayer["Spurs"] = -1
+	end
+		
 	if playerSex == "male" then
 		if menuVal <= 0 then
 			if catHash == 0xE06D30CE then
@@ -303,27 +394,35 @@ function SetPlayerComponent(menuVal, catName, rawCat)
 			clothesPlayer[clothPlay] = ClothesUtils[rawCat][menuVal]
 		end
 	else
-	
+		if menuVal <= 0 then
+			Citizen.InvokeNative(0xD710A5007C2AC539, playerPed, catHash, 0);
+			Citizen.InvokeNative(0xCC8CA3E88256E58F, playerPed, 0, 1, 1, 1, 0);
+			clothesPlayer[clothPlay] = -1;
+		else
+			Citizen.InvokeNative(0x59BD177A1A48600A, playerPed, catHash);
+			Citizen.InvokeNative(0xD3A7B003ED343FD9, playerPed, ClothesUtils[rawCat][menuVal], true, false, true);
+			Citizen.InvokeNative(0xD3A7B003ED343FD9, playerPed, ClothesUtils[rawCat][menuVal], true, true, true);
+			clothesPlayer[clothPlay] = ClothesUtils[rawCat][menuVal]
+		end
 	end
 end
 
 function MainClothingMenu()
 	MenuData.CloseAll()
 	local cFG = Config.Stores[1]
-	print(playerSex)
 
 	local elements = {
 		{
 		 label = _('TitleMenuClothes'),
 		 value = 'ClothingMenu' ,
 		 desc = _('SubTitleMenuClothes'),
-		 image="nui://vorp_clothingstore/images/clothing_purchase.png",
+		 image = "nui://vorp_clothingstore/images/clothing_purchase.png",
 		},
 		{
 		 label = _('TitleMenuOutfits'),
 		 value = 'OutfitMenu' ,
 		 desc = _('SubTitleMenuOutfits'),
-		 image="nui://vorp_clothingstore/images/kit_wardrobe.png",
+		 image = "nui://vorp_clothingstore/images/kit_wardrobe.png",
 		},
 	}
 
@@ -353,21 +452,27 @@ function ClothingMenu()
 	MenuData.CloseAll()
 	local cFG = Config.Stores[1]
 	local elements = {}
-	local selectedComponents, totalCost = {}, 0
+	local selectedComponents = {}
+
 	
 	for k,v in pairs(ClothesUtils) do
 		if string.find(string.lower(k), "_" .. playerSex) then
-			local labelForm = "N/A"
-			if Config.Conversions[k] then; labelForm = _(Config.Conversions[k]); end
+			local labelForm, descForm = "N/A", "N/A"
+			if CategoryRawNames[k] then
+				local convertedFormat = CategoryRawNames[k]
+				labelForm = _(convertedFormat)											-- Look up table to make the conversion in a loop 
+				descForm = Locales[Config.defaultlang].Descriptions[convertedFormat]	-- instead of each element being declared
+			end
 			
 			elements[#elements + 1] = {
-			 label = labelForm,					-- Ex. "RINGS_RH"
-			 type = "dynamic",
+			 label = labelForm,
+			 desc = descForm,
+			 type = "slider",
 			 value = 0,
 			 min = 0,
 			 max = #v,
 			 rawName = k,						-- Ex. "RINGS_RH_MALE"
-			 catItem = Config.Conversions[k]	-- Ex. "RightRings"
+			 catItem = CategoryRawNames[k]		-- Ex. "RINGS_RH_MALE" > "RightRings"
 			}
 			
 		end
@@ -384,23 +489,28 @@ function ClothingMenu()
 	},
 
 	function(data, menu)
-		for k,v in pairs(data.elements) do
-			if data.current.value == "purchase" then
-				FinishBuy(true, 5)
-				menu.close()
-			elseif data.current.value > 0 and (selectedComponents[data.current.rawName] ~= data.current.value) then
-				SetPlayerComponent(data.current.value, data.current.catItem, data.current.rawName)
-				selectedComponents[data.current.rawName] = data.current.value
-				totalCost = totalCost + Config.Cost[data.current.catItem]
-			elseif data.current.value == 0 and selectedComponents[data.current.rawName] then
-				SetPlayerComponent(0, data.current.catItem, data.current.rawName)
-				selectedComponents[data.current.rawName] = nil
-				totalCost = totalCost - Config.Cost[data.current.catItem]
+		if data.current.value == "purchase" then
+			FinishBuy(true, totalCost)
+			menu.close()
+		else
+			for k,v in pairs(data.elements) do
+				if data.current.value > 0 and (selectedComponents[data.current.rawName] ~= data.current.value) then
+					SetPlayerComponent(data.current.value, data.current.catItem, data.current.rawName)
+					if not selectedComponents[data.current.rawName] then; totalCost = totalCost + Config.Cost[data.current.catItem]; end
+					selectedComponents[data.current.rawName] = data.current.value
+				elseif data.current.value == 0 and selectedComponents[data.current.rawName] then
+					SetPlayerComponent(0, data.current.catItem, data.current.rawName)
+					selectedComponents[data.current.rawName] = nil
+					totalCost = totalCost - Config.Cost[data.current.catItem]
+				end
 			end
 		end
 	end,
 
 	function(data, menu)
+		totalCost = 0
+		clothesPlayer = originalOutfit
+		PreviewOutfit(false)
 		MainClothingMenu()
 	end)
 end
@@ -408,7 +518,6 @@ end
 function OutfitMenu()
 	MenuData.CloseAll()
 	local elements = {}
-	local selectedOutfit
 	
 	for k,v in pairs(MyOutfits) do
 		local outfitName
@@ -416,10 +525,9 @@ function OutfitMenu()
 		elements[#elements + 1] = {
 			 label = outfitName,
 			 value = k,
+			 dbId = v.dbId
 		}
 	end
-	
-	elements[#elements + 1] = { label = _('SelectOutfit'), value = "select", image= "nui://vorp_clothingstore/images/kit_wardrobe.png" }
 
 	MenuData.Open('default', GetCurrentResourceName(), "OutfitMenu",
 	{
@@ -430,18 +538,49 @@ function OutfitMenu()
 	},
 
 	function(data, menu)
-		for k,v in pairs(data.elements) do
-			if data.current.value == "select" then
-				menu.close()
-				SetOutfit(selectedOutfit)
-			elseif data.current.value ~= "select" and data.current.value then
-				selectedOutfit = data.current.value
-				print(selectedOutfit)
-			end
+		if data.current.value and not loadingData then
+			PreviewOutfit(data.current.value)
+			OutfitSubMenu(data.current.value, data.current.dbId)
 		end
 	end,
 
 	function(data, menu)
+		PreviewOutfit(false)
 		MainClothingMenu()
+	end)
+end
+
+function OutfitSubMenu(index, outfitId)
+	MenuData.CloseAll()
+	local elements = {}
+	local selectedOutfit, dbId = index, outfitId
+
+	elements = {
+		{ label = _('TitleMenuOutfitsUseBtn'), value = "wear", image = "nui://vorp_clothingstore/images/kit_wardrobe.png" },
+		{ label = _('TitleMenuOutfitsDeleteBtn'), value = "delete" }
+	}
+	MenuData.Open('default', GetCurrentResourceName(), "OutfitSubMenu",
+	{
+		title   = _('TitleMenuOutfits'),
+		subtext = _('SubTitleMenuOutfits'),
+		align   = 'top-left',
+		elements = elements,
+	},
+
+	function(data, menu)
+		if data.current.value == "wear" then
+			SetOutfit(selectedOutfit)
+			menu.close()
+			Wait(500)
+		elseif data.current.value == "delete" then
+			DeleteOutfit(selectedOutfit, dbId)
+			PreviewOutfit(false)
+			OutfitMenu()
+			Wait(500)
+		end
+	end,
+
+	function(data, menu)
+		OutfitMenu()
 	end)
 end
