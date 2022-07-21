@@ -1,6 +1,6 @@
 StoreBlips, StorePeds, initComplete = {}, {}, false
 Pedheading, DressHeading, cameraIndex = 0.0, 0.0, 0
-inShop = false
+inShop, loadingData, totalCost = false, false, 0
 
 MenuData = {}
 TriggerEvent("menuapi:getData",function(call)
@@ -30,9 +30,18 @@ Citizen.CreateThread(function()
 					break
 				end
 			end
-		elseif inShop then
+		elseif inShop and inShop > 0 then
 			delayThread = 2
-			if IsControlJustPressed(0, 0x8FD015D8) then
+			if loadingData then
+				DrawText(_("LoadingOverlay"), 0.5, 0.9, 0.7, 0.7, 255, 84, 84, 255, true, true)
+			else
+				DrawText(_("PressGuide"), 0.5, 0.9, 0.7, 0.7, 255, 255, 255, 255, true, true);
+			end
+			if totalCost > 0 then; DrawText(_("CostOverlay") .. totalCost, 0.95, 0.9, 0.4, 0.4, 255, 250, 184, 255, false, true); end
+			
+			DisableAllControlActions(0)
+			
+			if IsControlJustPressed(0, 0x8FD015D8) or IsDisabledControlJustPressed(0, 0x8FD015D8) then
 				cameraIndex = cameraIndex + 1;
 				if (cameraIndex > 4) then
 					cameraIndex = 0;
@@ -40,7 +49,7 @@ Citizen.CreateThread(function()
 
 				SwapCameras(cameraIndex);
 			end
-			if IsControlJustPressed(0, 0xD27782E3) then
+			if IsControlJustPressed(0, 0xD27782E3) or IsDisabledControlJustPressed(0, 0xD27782E3) then
 				cameraIndex = cameraIndex - 1;
 				if (cameraIndex < 0) then
 					cameraIndex = 4;
@@ -48,13 +57,17 @@ Citizen.CreateThread(function()
 
 				SwapCameras(cameraIndex);
 			end
-			if IsControlJustPressed(0, 0x7065027D) then
+			if IsControlPressed(0, 0x7065027D) or IsDisabledControlPressed(0, 0x7065027D) then
 				DressHeading = DressHeading + 1.0;
 				SetEntityHeading(playerPed, DressHeading);
 			end
-			if IsControlPressed(0, 0xB4E465B4) then
+			if IsControlPressed(0, 0xB4E465B4) or IsDisabledControlPressed(0, 0xB4E465B4) then
 				DressHeading = DressHeading - 1.0;
 				SetEntityHeading(playerPed, DressHeading);
+			end
+			
+			if IsPedDeadOrDying(playerPed) then
+				EmergencyCleanup()
 			end
 		end
 		Citizen.Wait(delayThread)
@@ -69,7 +82,6 @@ end)
 
 RegisterNetEvent('vorpclothingstore:LoadYourOutfits')
 AddEventHandler('vorpclothingstore:LoadYourOutfits', function(result)
-	print(json.encode(result))
 	LoadYourOutfits(result)
 end)
 
@@ -82,11 +94,7 @@ AddEventHandler('onResourceStop', function(resourceName)
 	if (GetCurrentResourceName() == resourceName) then
 		BlipManager(false)
 		PedManager(false)
-		MenuData.CloseAll()
-		RenderScriptCams(false, true, 1000, true, true, 0);	-- Debug
-		FreezeEntityPosition(PlayerPedId(), false);	-- Debug
-		DoScreenFadeIn(1);	-- Debug
-		TriggerEvent("vorp:setInstancePlayer", false);	-- Debug
-		print("off")
+		EmergencyCleanup()
+		Citizen.Wait(1500)
 	end
 end)
