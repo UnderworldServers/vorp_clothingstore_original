@@ -272,14 +272,12 @@ function FinishBuy(buy, cost)
 			TriggerServerEvent("vorpclothingstore:buyPlayerCloths", cost, json.encode(clothesPlayer), saveOutfit, outfitName);
 			return
 		end)
-		TriggerServerEvent("vorpclothingstore:buyPlayerCloths", cost, json.encode(clothesPlayer), saveOutfit, outfitName);
 	end
 end
 
 function startBuyCloths(state)
 	if not state then
 		MenuData.CloseAll()
-		ExecuteCommand("rc")
 	else
 		TriggerServerEvent("vorpcharacter:getPlayerSkin");
 	end
@@ -290,7 +288,7 @@ function startBuyCloths(state)
 
 	DoScreenFadeOut(1000);
 	Citizen.Wait(2000);
-
+	if not state then; ExecuteCommand("rc"); end
 	SetCamActive(CamWardrove, false);
 	RenderScriptCams(false, true, 1000, true, true, 0);
 	Citizen.Wait(1000);
