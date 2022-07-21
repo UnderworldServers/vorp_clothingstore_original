@@ -12115,6 +12115,11 @@ ClothesUtils = {
 	};
 }
 
+----------------------------------------------------------------------------------------------------------
+-------------------------------- DO NOT EDIT ANY OF THE KEYS/VALUES BELOW --------------------------------
+--------------------------- These are look up tables to maintain compatibility ---------------------------
+----------------------------------------------------------------------------------------------------------
+
 CategoryHashes = {
 	Hats = 0x9925C067,
 	Glasses = 0x5E47CA6,
@@ -12149,6 +12154,40 @@ CategoryHashes = {
 	Masks = 0x7505EF42,
 }
 
+CategoryDBName = {
+	Hat = 0x9925C067,
+	EyeWear = 0x5E47CA6,
+	Neckwear = 0x5FC29285,
+	NeckTies = 0x7A96FACA,
+	Shirt = 0x2026C46D,
+	Suspender = 0x877A2CF7,
+	Vest = 0x485EE834,
+	Coat = 0xE06D30CE,
+	CoatClosed = 0x0662AC34,
+	Poncho = 0xAF14310B,
+	Cloak = 0x3C1A74CD,
+	Gloves = 0xEABE0032,
+	RingRh = 0x7A6BBD0B,
+	RingLh = 0xF16A1D23,
+	Bracelet = 0x7BC10759,
+	Gunbelt = 0x9B2C8B89,
+	Belt = 0xA6D134C6,
+	Buckle = 0xFAE9107F,
+	Holster = 0xB6B6122D,
+	Pant = 0x1D4C528A,
+	Skirt = 0xA0E3AB7F,
+	Boots = 0x777EC6EF,
+	Chap = 0x3107499B,
+	Spurs = 0x18729F39,
+	Spats = 0x514ADCEA,
+	Gauntlets = 0x91CE9B20,
+	Loadouts = 0x83887E88,
+	Accessories = 0x79D7DF96,
+	Satchels = 0x94504D26,
+	GunbeltAccs = 0xF1542D11,
+	Mask = 0x7505EF42,
+}
+
 CategoryClothesPlayer = {
 	Hats = "Hat",
 	Glasses = "EyeWear",
@@ -12181,4 +12220,38 @@ CategoryClothesPlayer = {
 	Satchels = "Satchels",
 	GunbeltAccs = "GunbeltAccs",
 	Masks = "Mask",
+}
+
+CategoryRawNames = {
+	HATS_MALE = "Hats"; HATS_FEMALE = "Hats";
+	EYEWEAR_MALE = "Glasses"; EYEWEAR_FEMALE = "Glasses";
+	NECKWEAR_MALE = "Neckwear"; NECKWEAR_FEMALE = "Neckwear";
+	NECKTIES_MALE = "Ties"; NECKTIES_FEMALE = "Ties";
+	SHIRTS_MALE = "Shirts"; SHIRTS_FEMALE = "Shirts";
+	SUSPENDERS_MALE = "Suspenders"; SUSPENDERS_FEMALE = "Suspenders";
+	VEST_MALE = "Vests"; VEST_FEMALE = "Vests";
+	COATS_MALE = "Coats"; COATS_FEMALE = "Coats";
+	COATS_CLOSED_MALE = "CoatsClosed"; COATS_CLOSED_FEMALE = "CoatsClosed";
+	PONCHOS_MALE = "Ponchos"; PONCHOS_FEMALE = "Ponchos";
+	CLOAK_MALE = "Cloaks"; CLOAK_FEMALE = "Cloaks";
+	GLOVES_MALE = "Gloves"; GLOVES_FEMALE = "Gloves";
+	RINGS_RH_MALE = "RightRings"; RINGS_RH_FEMALE = "RightRings";
+	RINGS_LH_MALE = "LeftRings"; RINGS_LH_FEMALE = "LeftRings";
+	BRACELETS_MALE = "Bracelets"; BRACELETS_FEMALE = "Bracelets";
+	GUNBELT_MALE = "PrimaryHolsters"; GUNBELT_FEMALE =  "PrimaryHolsters";
+	BELT_MALE = "Belts"; BELT_FEMALE =  "Belts";
+	BUCKLE_MALE = "Buckles"; BUCKLE_FEMALE = "Buckles";
+	HOLSTERS_S_MALE = "SecondaryHolsters"; HOLSTERS_S_FEMALE = "SecondaryHolsters";
+	PANTS_MALE = "Pants"; PANTS_FEMALE = "Pants";
+	SKIRTS_FEMALE = "Skirts";
+	BOOTS_MALE = "Boots"; BOOTS_FEMALE = "Boots";
+	CHAPS_MALE = "Chaps"; CHAPS_FEMALE = "Chaps";
+	SPURS_MALE = "Spurs"; SPURS_FEMALE = "Spurs";
+	SPATS_MALE = "Spats"; SPATS_FEMALE = "Spats";
+	GAUNTLETS_MALE = "Gauntlets"; GAUNTLETS_FEMALE = "Gauntlets";
+	LOADOUTS_MALE = "Loadouts"; LOADOUTS_FEMALE = "Loadouts";
+	ACCESSORIES_MALE = "Accessories"; ACCESSORIES_FEMALE = "Accessories";
+	SATCHELS_MALE = "Satchels"; SATCHELS_FEMALE =  "Satchels";
+	GUNBELTACCS_MALE = "GunbeltAccs"; GUNBELTACCS_FEMALE =  "GunbeltAccs";
+	MASK_MALE = "Masks"; MASK_FEMALE = "Masks"
 }
