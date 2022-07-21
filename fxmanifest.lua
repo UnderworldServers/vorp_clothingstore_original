@@ -5,8 +5,8 @@ game 'rdr3'
 lua54 'yes'
 version '1.0'
 
-author 'Bobert/UnderworldServers'
-description 'Refactored vorp_clothingstore into lua'
+author 'VORP / UnderworldServers'
+description 'vorp_clothingstore lua'
 
 client_scripts { 
     'client/client.lua',
@@ -31,3 +31,10 @@ dependencies {
     'vorp_core',
     'vorp_character'
 }
+
+
+
+
+--------------- Thanks to Artzalez, the original creator.
+--------------- Refactored from C# to Lua by Bobert
+--------------- https://github.com/UnderworldServers
