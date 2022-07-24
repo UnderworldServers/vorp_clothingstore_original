@@ -103,6 +103,9 @@ function EmergencyCleanup() -- Only called if the player dies inside the shops o
 		Citizen.Wait(250);
 		DestroyCam(CamWardrove, true);
 		FreezeEntityPosition(PlayerPedId(), false);
+		DisplayRadar(true)
+		DisplayHud(true)
+		TriggerEvent("vorp:showUi", true)
 		SetEntityCoords(PlayerPedId(), PedExitx, PedExity, PedExitz, false, false, false, false);
 		SetEntityHeading(PlayerPedId(), PedExitheading);
 		VORPcore.instancePlayers(0)
@@ -170,6 +173,10 @@ function MoveToCoords(loc)
 
 	Citizen.Wait(1000);
 	NetworkSetInSpectatorMode(true, playerPed);
+	
+	DisplayRadar(false)
+	DisplayHud(false)
+	TriggerEvent("vorp:showUi", false)
 
 	local pedModel = GetHashKey("S_M_M_Tailor_01")
 	local PedWardrobe = CreatePed(pedModel, Doorx, Doory, Doorz, 0.0, false, true, true, true);
@@ -304,7 +311,10 @@ function startBuyCloths(state)
 
 	SetEntityCoords(PlayerPedId(), PedExitx, PedExity, PedExitz, false, false, false, false);
 	SetEntityHeading(PlayerPedId(), PedExitheading);
-
+	
+	DisplayRadar(true)
+	DisplayHud(true)
+	TriggerEvent("vorp:showUi", true)
 
 	VORPcore.instancePlayers(0)
 
