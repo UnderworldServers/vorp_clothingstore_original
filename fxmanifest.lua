@@ -3,18 +3,18 @@ rdr3_warning 'I acknowledge that this is a prerelease build of RedM, and I am aw
 
 game 'rdr3'
 lua54 'yes'
-version '1.0'
+
 
 author 'VORP / UnderworldServers'
 description 'vorp_clothingstore lua'
 
-client_scripts { 
-    'client/client.lua',
-    'client/functions.lua'
+client_scripts {
+    'client/*.lua',
+
 }
 
-server_scripts { 
-    'server/server.lua',
+server_scripts {
+    'server/*.lua',
 }
 
 shared_scripts {
@@ -27,12 +27,16 @@ files {
     'images/*'
 }
 
-dependencies { 
+dependencies {
     'vorp_core',
-    'vorp_character'
+    'vorp_character',
+    'menuapi'
 }
 
-
+version '1.0'
+vorp_checker 'yes'
+vorp_name '^4Resource version Check^3'
+vorp_github 'https://github.com/VORPCORE/vorp_clothingstores-lua'
 
 
 --------------- Thanks to Artzalez, the original creator.

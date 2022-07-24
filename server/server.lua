@@ -1,6 +1,6 @@
 local VORPcore = {}
 TriggerEvent("getCore", function(core)
-    VORPcore = core
+	VORPcore = core
 end)
 
 RegisterNetEvent('vorpclothingstore:getPlayerCloths')
@@ -8,14 +8,21 @@ AddEventHandler('vorpclothingstore:getPlayerCloths', function(result)
 	local _source = source
 	local Character = VORPcore.getUser(_source).getUsedCharacter
 	local charIdentifier = Character.charIdentifier
-	
+
 	local comps = Character.comps
 	local skin = Character.skin
-	
+
 	TriggerClientEvent('vorpclothingstore:LoadYourCloths', _source, comps, skin)
-	local sid = nil; for _, v in pairs(GetPlayerIdentifiers(_source)) do; if string.find(v, 'steam') then; sid = v; break; end; end
+	local sid = nil
+	for _, v in pairs(GetPlayerIdentifiers(_source)) do
+		if string.find(v, 'steam') then
+			sid = v
+			break
+		end
+	end
 	if sid then
-		exports["ghmattimysql"]:execute("SELECT * FROM outfits WHERE `identifier` = ? AND `charidentifier` = ?", { sid, charIdentifier }, function(result)
+		exports["ghmattimysql"]:execute("SELECT * FROM outfits WHERE `identifier` = ? AND `charidentifier` = ?",
+			{ sid, charIdentifier }, function(result)
 			if result then
 				TriggerClientEvent('vorpclothingstore:LoadYourOutfits', _source, result)
 			end
@@ -29,14 +36,21 @@ RegisterNetEvent('vorpclothingstore:buyPlayerCloths')
 AddEventHandler('vorpclothingstore:buyPlayerCloths', function(totalCost, jsonCloths, saveOutfit, outfitName)
 	local _source = source
 	local Character = VORPcore.getUser(_source).getUsedCharacter
-	local sid = nil; for _, v in pairs(GetPlayerIdentifiers(_source)) do; if string.find(v, 'steam') then; sid = v; break; end; end
+	local sid = nil;
+	for _, v in pairs(GetPlayerIdentifiers(_source)) do
+		if string.find(v, 'steam') then
+			sid = v
+			break
+		end
+	end
 	local userMoney = Character.money
 	if totalCost <= userMoney then
 		TriggerEvent("vorpcharacter:setPlayerCompChange", _source, jsonCloths);
 		local charIdentifier = Character.charIdentifier
 		if sid then
 			if saveOutfit then
-				 exports.ghmattimysql:execute("INSERT INTO outfits (identifier,charidentifier,title,comps) VALUES (?,?,?,?)", { sid, charIdentifier, outfitName, jsonCloths });
+				exports.ghmattimysql:execute("INSERT INTO outfits (identifier,charidentifier,title,comps) VALUES (?,?,?,?)",
+					{ sid, charIdentifier, outfitName, jsonCloths });
 			end
 		else
 			print("Error: SteamID not found for " .. _source)
@@ -63,9 +77,15 @@ end)
 RegisterNetEvent('vorpclothingstore:deleteOutfit')
 AddEventHandler('vorpclothingstore:deleteOutfit', function(outfitId)
 	local _source = source
-	local sid = nil; for _, v in pairs(GetPlayerIdentifiers(_source)) do; if string.find(v, 'steam') then; sid = v; break; end; end
+	local sid = nil
+	for _, v in pairs(GetPlayerIdentifiers(_source)) do
+		if string.find(v, 'steam') then
+			sid = v
+			break
+		end
+	end
 	if sid then
-		exports["ghmattimysql"]:execute("DELETE FROM outfits WHERE identifier=? AND id=?",{ sid, outfitId });
+		exports["ghmattimysql"]:execute("DELETE FROM outfits WHERE identifier=? AND id=?", { sid, outfitId })
 	else
 		print("Error: SteamID not found for " .. _source)
 	end
