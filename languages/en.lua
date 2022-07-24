@@ -25,6 +25,11 @@ Locales["En"] = {
 
     PlaceHolderNewOutfit = "Enter Name to Save",
     ButtonNewOutfit = "Save",
+
+    PlaceHolderSpecifyComp = "Enter #0-",			-- Disregard, for upcoming update
+    ButtonSpecifyComp = "Goto",						-- Disregard, for upcoming update
+	WrongInputType = "Only numbers are allowed",	-- Disregard, for upcoming update
+	OutOfRange = "Value is out of range, max: ",	-- Disregard, for upcoming update
 	
     Finish = "Complete Purchase",
 	SelectOutfit = "Confirm Outfit Selection",
