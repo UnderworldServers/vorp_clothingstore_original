@@ -90,3 +90,9 @@ AddEventHandler('vorpclothingstore:deleteOutfit', function(outfitId)
 		print("Error: SteamID not found for " .. _source)
 	end
 end)
+
+
+-- Ignore
+if Config.debugMode then
+	print("^3VORP_ClothingStore - Warning: ^7Debug mode is turned on, you may experience issues")
+end

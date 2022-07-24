@@ -8,12 +8,6 @@ TriggerEvent("menuapi:getData",function(call)
 end)
 
 Citizen.CreateThread(function()
-	Wait(1000)
-	--Wait(10000)
-	local pedModel = GetHashKey("S_M_M_Tailor_01")
-	LoadModel(pedModel)
-	BlipManager(true)	-- Initialize Store Objects/Blips
-	
 	while true do
 		local delayThread, playerPed = 500, PlayerPedId()
 		if initComplete and not inShop then
@@ -74,6 +68,13 @@ Citizen.CreateThread(function()
 	end
 end)
 
+RegisterNetEvent("vorp:SelectedCharacter")
+AddEventHandler("vorp:SelectedCharacter", function()
+	local pedModel = GetHashKey("S_M_M_Tailor_01")
+	LoadModel(pedModel)
+	Wait(1000)
+	BlipManager(true)
+end)
 
 RegisterNetEvent('vorpclothingstore:LoadYourCloths')
 AddEventHandler('vorpclothingstore:LoadYourCloths', function(comps, skin)
@@ -98,3 +99,12 @@ AddEventHandler('onResourceStop', function(resourceName)
 		Citizen.Wait(1500)
 	end
 end)
+
+if Config.debugMode then -- Only called during debugMode being on, this is so we skip vorp:SelectedCharacter
+	Citizen.CreateThread(function()
+		Citizen.Wait(1000)
+		local pedModel = GetHashKey("S_M_M_Tailor_01")
+		LoadModel(pedModel)
+		BlipManager(true)
+	end)
+end
