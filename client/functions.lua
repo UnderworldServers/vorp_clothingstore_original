@@ -472,24 +472,36 @@ function ClothingMenu()
 
 	for k, v in pairs(ClothesUtils) do
 		if string.find(string.lower(k), "_" .. playerSex) then
-			local labelForm, descForm = "N/A", "N/A"
+			local labelForm, descForm, elmNum = "N/A", "N/A", (#elements + 1)
 			if CategoryRawNames[k] then
 				local convertedFormat = CategoryRawNames[k]
 				labelForm = _(convertedFormat) -- Look up table to make the conversion in a loop
 				descForm = Locales[Config.defaultlang].Descriptions[convertedFormat] -- instead of each element being declared
 			end
 
-			elements[#elements + 1] = {
+			elements[elmNum] = {
 				label = labelForm,
 				desc = descForm,
 				type = "slider",
 				value = 0,
-				min = 0,
-				max = #v,
+				min = -1,	-- True min is 0, when value hits -1 it rolls over to max
+				max = (#v + 1),
+				trueMax = #v,
 				rawName = k, -- Ex. "RINGS_RH_MALE"
-				catItem = CategoryRawNames[k] -- Ex. "RINGS_RH_MALE" > "RightRings"
+				catItem = CategoryRawNames[k], -- Ex. "RINGS_RH_MALE" > "RightRings"
+				dbName = CategoryClothesPlayer[CategoryRawNames[k]]	-- Ex. RingRh
 			}
-
+			
+			for k2,v2 in pairs(clothesPlayer) do
+				if k2 == elements[elmNum].dbName then
+					for y,z in pairs(ClothesUtils[elements[elmNum].rawName]) do
+						if v2 == z then
+							elements[elmNum].value = y	-- If player has specified category equipped, set menu value to worn
+							break
+						end
+					end
+				end
+			end
 		end
 	end
 
@@ -508,6 +520,30 @@ function ClothingMenu()
 			if data.current.value == "purchase" then
 				FinishBuy(true, totalCost)
 				menu.close()
+			elseif data.current.type == "slider" and data.current.value < 0 then
+				for k,v in pairs(menu.data.elements) do
+					if v.rawName == data.current.rawName then
+						data.current.value = data.current.trueMax
+						menu.setElement(k, "value", data.current.trueMax)
+						menu.refresh()
+						SetPlayerComponent(data.current.value, data.current.catItem, data.current.rawName)
+						if not selectedComponents[data.current.rawName] then totalCost = totalCost + Config.Cost[data.current.catItem]; end
+						selectedComponents[data.current.rawName] = data.current.value
+						break
+					end
+				end
+			elseif data.current.type == "slider" and data.current.value > data.current.trueMax then
+				for k,v in pairs(menu.data.elements) do
+					if v.rawName == data.current.rawName then
+						data.current.value = 0
+						menu.setElement(k, "value", 0)
+						menu.refresh()
+						SetPlayerComponent(0, data.current.catItem, data.current.rawName)
+						selectedComponents[data.current.rawName] = nil
+						totalCost = totalCost - Config.Cost[data.current.catItem]
+						break
+					end
+				end
 			else
 				for k, v in pairs(data.elements) do
 					if data.current.value > 0 and (selectedComponents[data.current.rawName] ~= data.current.value) then
