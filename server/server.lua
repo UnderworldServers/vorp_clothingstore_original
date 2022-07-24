@@ -92,7 +92,7 @@ AddEventHandler('vorpclothingstore:deleteOutfit', function(outfitId)
 end)
 
 
--- Ignore
+-- Ignore, only to warn devs when debugMode is on
 if Config.debugMode then
 	print("^3VORP_ClothingStore - Warning: ^7Debug mode is turned on, you may experience issues")
 end

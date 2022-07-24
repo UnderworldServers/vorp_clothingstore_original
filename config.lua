@@ -1,6 +1,6 @@
 Config = {
   defaultlang = "En", -- Set your language, verify that it exists in vorp_clothingstore/languages/
-  debugMode = true,   -- LEAVE SET TO FALSE
+  debugMode = false,   -- LEAVE SET TO FALSE
 
   Cost = {	-- Category Prices (Each item equiped adds to the total cost)
 	  Hats = 4.0,
